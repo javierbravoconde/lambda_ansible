@@ -1,0 +1,25 @@
+- hosts: localhost
+  connection: local
+  gather_facts: False
+
+  tasks:
+    - name: looped creation
+      lambda:
+        name: '{{ item.name }}'
+        state: present
+        zip_file: '{{ item.zip_file }}'
+        runtime: 'python3.6'
+        role: 'arn:aws:iam::860270146550:role/mynewrole'
+        handler: 'hello_python.my_handler'
+        vpc_subnet_ids:
+        - subnet-037d575fdf3397753
+        - subnet-09a9909bf1358e054
+        vpc_security_group_ids:
+        - sg-0a1fddf45fde66004
+        environment_variables: '{{ item.env_vars }}'
+      with_items:
+        - name: HelloAnsible
+          zip_file: vpc_access_vpc-09e43c4162a1bbf8b.zip
+          env_vars:
+            key1: "first"
+            key2: "second"
