@@ -3,14 +3,28 @@
   gather_facts: False
 
   tasks:
-    - name: looped creation
+    - name: Create a role with description
+      iam_role:
+        name: mynewrole
+        assume_role_policy_document: "{{ lookup('file','assume_role.json') }}"
+        description: This is My New Role
+        managed_policy:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      register: role
+
+    - name: Show role name
+      debug:
+        msg:
+          - "role arn is  {{ role.arn }}"
+
+    - name: Lambda Creation
       lambda:
         name: '{{ item.name }}'
         state: present
         zip_file: '{{ item.zip_file }}'
         runtime: 'python3.6'
-        role: 'arn:aws:iam::860270146550:role/mynewrole'
-        handler: 'hello_python.my_handler'
+        role: '{{ role.arn }}'
+        handler: 'lambda_event.lambda_handler'
         vpc_subnet_ids:
         - subnet-037d575fdf3397753
         - subnet-09a9909bf1358e054
@@ -18,8 +32,10 @@
         - sg-0a1fddf45fde66004
         environment_variables: '{{ item.env_vars }}'
       with_items:
-        - name: HelloAnsible
-          zip_file: vpc_access_vpc-09e43c4162a1bbf8b.zip
+        - name: lambda-event
+          zip_file: lambda-event.zip
           env_vars:
-            key1: "first"
-            key2: "second"
+            RMQHOST: "127.0.0.1"
+            RMQPWD: "guest"
+            RMQUSER: "guest"
+            SERVER_QUEUE: "apcon.em"
