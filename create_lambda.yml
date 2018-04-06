@@ -5,7 +5,7 @@
   tasks:
     - name: Create a role with description
       iam_role:
-        name: mynewrole
+        name: LambdaEC2Execute
         assume_role_policy_document: "{{ lookup('file','assume_role.json') }}"
         description: This is My New Role
         managed_policy:
@@ -16,6 +16,10 @@
       debug:
         msg:
           - "role arn is  {{ role.arn }}"
+
+    - name: Pause for the role to be applied
+      pause: seconds=5
+
 
     - name: Lambda Creation
       lambda:
